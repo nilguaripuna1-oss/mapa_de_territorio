@@ -1,24 +1,25 @@
-name: meu_projeto_territorio
-description: A new Flutter project.
-publish_to: 'none' 
-
+name: congregacao_territorio
+description: Gestão de território para congregação.
+publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  
-  # COLE AQUI:
-  image_picker: ^1.0.7  # Este é o pacote que abre a galeria do celular
+  provider: ^6.1.2
+  sqflite: ^2.3.3
+  path_provider: ^2.1.4
+  intl: ^0.19.0
+  google_maps_flutter: ^2.6.0   # (opcional, mas incluído)
+  permission_handler: ^11.3.0   # para localização
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true
-
