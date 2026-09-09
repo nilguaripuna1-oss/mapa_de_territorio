@@ -1,4 +1,4 @@
-name: congregacao_territorio
+name: mapa_de_territorio
 description: Gestão de território para congregação.
 publish_to: 'none'
 version: 1.0.0+1
