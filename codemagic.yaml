@@ -1,10 +1,6 @@
-workflows:
-  flutter-build:
-    name: Build Android APK
-    environment:
-      flutter: stable
-    scripts:
-      - flutter pub get
-      - flutter build apk --release
-    artifacts:
-      - build/app/outputs/flutter-apk/*.apk
+
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^2.24.2
+  cloud_firestore: ^4.14.0
