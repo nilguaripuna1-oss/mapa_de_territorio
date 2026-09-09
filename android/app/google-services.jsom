@@ -1,1 +1,30 @@
+{
+  "project_info": {
+    "project_number": "442358444101",
+    "project_id": "mapa-de-territorio-d7f02",
+    "storage_bucket": "mapa-de-territorio-d7f02.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:442358444101:android:e872ce226d93748f1b732c",
+        "android_client_info": {
+          "package_name": "com.exemplo.mapa_de_territorio"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5EKNuPcrxflz1AfuMZy01IYukdjLP9tc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
 
