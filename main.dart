@@ -1,151 +1,185 @@
-import 'package:sqflite/sqflite.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart';
-import 'dart:io';
+import 'package:flutter/material.dart';
 
-class DatabaseHelper {
-  static final DatabaseHelper _instance = DatabaseHelper._internal();
-  factory DatabaseHelper() => _instance;
-  DatabaseHelper._internal();
+void main() {
+  runApp(const MapaDeTerritorioApp());
+}
 
-  static Database? _database;
+class MapaDeTerritorioApp extends StatelessWidget {
+  const MapaDeTerritorioApp({super.key});
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDB();
-    return _database!;
-  }
-
-  Future<Database> _initDB() async {
-    Directory docsDir = await getApplicationDocumentsDirectory();
-    String path = join(docsDir.path, 'congregacao.db');
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createTables,
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Mapa de Território',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+      ),
+      home: const PaginaInicial(),
+      debugShowCheckedModeBanner: false,
     );
   }
+}
 
-  Future<void> _createTables(Database db, int version) async {
-    // Tabela Território
-    await db.execute('''
-      CREATE TABLE territorios(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT NOT NULL,
-        descricao TEXT,
-        numero INTEGER,
-        status TEXT,  -- 'disponivel', 'ocupado', 'atrasado'
-        publicador_responsavel TEXT,
-        data_atribuicao TEXT,
-        data_devolucao TEXT
-      )
-    ''');
+class PaginaInicial extends StatelessWidget {
+  const PaginaInicial({super.key});
 
-    // Tabela Serviço de Campo
-    await db.execute('''
-      CREATE TABLE servico_campo(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        publicador TEXT NOT NULL,
-        data_saida TEXT,
-        data_retorno TEXT,
-        territorio_id INTEGER,
-        observacao TEXT,
-        FOREIGN KEY (territorio_id) REFERENCES territorios(id) ON DELETE SET NULL
-      )
-    ''');
+  @override
+  Widget build(BuildContext context) {
+    final List<Map<String, dynamic>> botoesAbas = [
+      {'titulo': 'Território', 'icone': Icons.map, 'cor': Colors.blue},
+      {'titulo': 'Serviço de Campo', 'icone': Icons.group, 'cor': Colors.green},
+      {'titulo': 'Dirigente', 'icone': Icons.person, 'cor': Colors.orange},
+      {'titulo': 'S.13', 'icone': Icons.assignment, 'cor': Colors.purple},
+      {'titulo': 'Eventos', 'icone': Icons.event, 'cor': Colors.red},
+      {'titulo': 'Admin', 'icone': Icons.admin_panel_settings, 'cor': Colors.teal},
+    ];
 
-    // Tabela Eventos
-    await db.execute('''
-      CREATE TABLE eventos(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        titulo TEXT NOT NULL,
-        descricao TEXT,
-        data_inicio TEXT,
-        data_fim TEXT,
-        tipo TEXT  -- 'reuniao', 'assembleia', 'visita', 'outro'
-      )
-    ''');
-
-    // Tabela Dirigente (escala de oradores)
-    await db.execute('''
-      CREATE TABLE dirigente(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        data TEXT NOT NULL,
-        orador TEXT NOT NULL,
-        tipo_reuniao TEXT,  -- 'meio de semana', 'fim de semana'
-        tema TEXT,
-        designacao TEXT
-      )
-    ''');
-
-    // Tabela S-13 (relatório mensal)
-    await db.execute('''
-      CREATE TABLE s13(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        publicador TEXT NOT NULL,
-        mes INTEGER,
-        ano INTEGER,
-        horas INTEGER DEFAULT 0,
-        revisitas INTEGER DEFAULT 0,
-        estudos INTEGER DEFAULT 0,
-        videos_mostrados INTEGER DEFAULT 0
-      )
-    ''');
-
-    // Tabela Admin (configurações, backup)
-    await db.execute('''
-      CREATE TABLE config(
-        chave TEXT PRIMARY KEY,
-        valor TEXT
-      )
-    ''');
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Mapa de Território'),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.builder(
+          itemCount: botoesAbas.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 16.0,
+            mainAxisSpacing: 16.0,
+            childAspectRatio: 1.2,
+          ),
+          itemBuilder: (context, index) {
+            final aba = botoesAbas[index];
+            return Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: InkWell(
+                onTap: () {
+                  if (aba['titulo'] == 'Território') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const TelaTerritorio()),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Abrindo: ${aba['titulo']}')),
+                    );
+                  }
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      aba['icone'],
+                      size: 48,
+                      color: aba['cor'],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      aba['titulo'],
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
+}
 
-  // Métodos genéricos CRUD
-  Future<int> insert(String table, Map<String, dynamic> data) async {
-    Database db = await database;
-    return await db.insert(table, data);
-  }
+// ==========================================
+// TELA DE TERRITÓRIOS (Integrada no mesmo arquivo)
+// ==========================================
+class TelaTerritorio extends StatefulWidget {
+  const TelaTerritorio({super.key});
 
-  Future<List<Map<String, dynamic>>> queryAll(String table) async {
-    Database db = await database;
-    return await db.query(table);
-  }
+  @override
+  State<TelaTerritorio> createState() => _TelaTerritorioState();
+}
 
-  Future<int> update(String table, Map<String, dynamic> data, int id) async {
-    Database db = await database;
-    return await db.update(table, data, where: 'id = ?', whereArgs: [id]);
-  }
+class _TelaTerritorioState extends State<TelaTerritorio> {
+  final List<Map<String, dynamic>> _territorios = List.generate(
+    14,
+    (index) => {
+      'numero': index + 1,
+      'nome': 'Território ${index + 1}',
+      'disponivel': true,
+      'responsavel': 'Nenhum',
+    },
+  );
 
-  Future<int> delete(String table, int id) async {
-    Database db = await database;
-    return await db.delete(table, where: 'id = ?', whereArgs: [id]);
-  }
-
-  Future<void> clearTable(String table) async {
-    Database db = await database;
-    await db.delete(table);
-  }
-
-  // Método para backup/restore (exportar JSON)
-  Future<Map<String, dynamic>> exportAll() async {
-    Map<String, dynamic> data = {};
-    List<String> tables = ['territorios', 'servico_campo', 'eventos', 'dirigente', 's13', 'config'];
-    for (String table in tables) {
-      data[table] = await queryAll(table);
-    }
-    return data;
-  }
-
-  Future<void> importAll(Map<String, dynamic> data) async {
-    Database db = await database;
-    await db.transaction((txn) async {
-      for (String table in data.keys) {
-        await txn.delete(table);
-        for (var row in data[table]) {
-          await txn.insert(table, row);
-        }
-      }
+  void _adicionarTerritorio() {
+    setState(() {
+      int novoNumero = _territorios.length + 1;
+      _territorios.add({
+        'numero': novoNumero,
+        'nome': 'Território $novoNumero',
+        'disponivel': true,
+        'responsavel': 'Nenhum',
+      });
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Gerenciamento de Territórios'),
+        centerTitle: true,
+      ),
+      body: ListView.builder(
+        itemCount: _territorios.length,
+        itemBuilder: (context, index) {
+          final territorio = _territorios[index];
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            elevation: 2,
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: territorio['disponivel'] ? Colors.green : Colors.orange,
+                child: Text(
+                  '${territorio['numero']}',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+              title: Text(
+                territorio['nome'],
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                territorio['disponivel']
+                    ? 'Status: Disponível'
+                    : 'Designado para: ${territorio['responsavel']}',
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.edit, color: Colors.blue),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Abrindo ${territorio['nome']}')),
+                  );
+                },
+              ),
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _adicionarTerritorio,
+        tooltip: 'Adicionar Território',
+        child: const Icon(Icons.add),
+      ),
+    );
   }
 }
