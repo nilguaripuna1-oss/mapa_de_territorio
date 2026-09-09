@@ -1,1 +1,84 @@
+import 'package:flutter/material.dart';
+
+class TelaTerritorio extends StatefulWidget {
+  const TelaTerritorio({super.key});
+
+  @override
+  State<TelaTerritorio> createState() => _TelaTerritorioState();
+}
+
+class _TelaTerritorioState extends State<TelaTerritorio> {
+  final List<Map<String, dynamic>> _territorios = List.generate(
+    14,
+    (index) => {
+      'numero': index + 1,
+      'nome': 'Território ${index + 1}',
+      'disponivel': true,
+      'responsavel': 'Nenhum',
+    },
+  );
+
+  void _adicionarTerritorio() {
+    setState(() {
+      int novoNumero = _territorios.length + 1;
+      _territorios.add({
+        'numero': novoNumero,
+        'nome': 'Território $novoNumero',
+        'disponivel': true,
+        'responsavel': 'Nenhum',
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Gerenciamento de Territórios'),
+        centerTitle: true,
+      ),
+      body: ListView.builder(
+        itemCount: _territorios.length,
+        itemBuilder: (context, index) {
+          final territorio = _territorios[index];
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            elevation: 2,
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: territorio['disponivel'] ? Colors.green : Colors.orange,
+                child: Text(
+                  '${territorio['numero']}',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+              title: Text(
+                territorio['nome'],
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                territorio['disponivel']
+                    ? 'Status: Disponível'
+                    : 'Designado para: ${territorio['responsavel']}',
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.edit, color: Colors.blue),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Abrindo ${territorio['nome']}')),
+                  );
+                },
+              ),
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _adicionarTerritorio,
+        tooltip: 'Adicionar Território',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
 
